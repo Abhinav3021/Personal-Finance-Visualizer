@@ -33,14 +33,14 @@ export default function BudgetList({
   onEdit, 
   onDelete, 
   onAdd, 
-  isLoading 
+  isLoading
 }: BudgetListProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(amount);
   };
 
@@ -48,7 +48,7 @@ export default function BudgetList({
     try {
       const [year, monthNum] = month.split('-');
       const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
-      return date.toLocaleDateString('en-US', { 
+      return date.toLocaleDateString('en-IN', { 
         year: 'numeric', 
         month: 'long' 
       });
@@ -92,7 +92,7 @@ export default function BudgetList({
         {currentMonthBudgets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <p>No budgets set for this month.</p>
-            <p className="text-sm mt-2">Click "Add Budget" to set your first budget.</p>
+            <p className="text-sm mt-2">Click Add Budget to set your first budget.</p>
           </div>
         ) : (
           <div className="space-y-3">

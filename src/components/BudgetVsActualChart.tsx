@@ -5,11 +5,13 @@ import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Budget, Transaction } from '@/types/transaction';
+import { Skeleton } from '@/components/ui/skeleton'; // Assuming you have a Skeleton component
 
 interface BudgetVsActualChartProps {
   budgets: Budget[];
   transactions: Transaction[];
   selectedMonth: string;
+  isLoading?: boolean;
 }
 
 interface ChartData {
@@ -20,14 +22,15 @@ interface ChartData {
   status: 'under' | 'over' | 'ontrack';
 }
 
-export default function BudgetVsActualChart({ 
-  budgets, 
-  transactions, 
-  selectedMonth 
+export default function BudgetVsActualChart({
+  budgets,
+  transactions,
+  selectedMonth,
+  isLoading
 }: BudgetVsActualChartProps) {
   const chartData = useMemo(() => {
     const currentBudgets = budgets.filter(budget => budget.month === selectedMonth);
-    
+
     if (currentBudgets.length === 0) {
       return [];
     }
@@ -35,7 +38,7 @@ export default function BudgetVsActualChart({
     // Calculate actual spending per category for the selected month
     const actualSpending = transactions
       .filter(transaction => {
-        const transactionMonth = transaction.date.substring(0, 7); // YYYY-MM
+        const transactionMonth = transaction.date.substring(0, 7); //YYYY-MM
         return transactionMonth === selectedMonth;
       })
       .reduce((acc, transaction) => {
@@ -49,7 +52,7 @@ export default function BudgetVsActualChart({
       const actual = actualSpending[budget.category] || 0;
       const budgeted = budget.budgetAmount;
       const difference = actual - budgeted;
-      
+
       let status: 'under' | 'over' | 'ontrack' = 'under';
       if (difference > budgeted * 0.1) {
         status = 'over';
@@ -70,9 +73,9 @@ export default function BudgetVsActualChart({
   }, [budgets, transactions, selectedMonth]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(amount);
   };
 
@@ -80,9 +83,9 @@ export default function BudgetVsActualChart({
     try {
       const [year, monthNum] = month.split('-');
       const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
+      return date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long'
       });
     } catch {
       return month;
@@ -148,6 +151,35 @@ export default function BudgetVsActualChart({
     return null;
   };
 
+  if (isLoading) {
+    return (
+      <Card className="w-full animate-pulse">
+        <CardHeader>
+          <Skeleton className="h-6 w-2/3 mb-2" />
+          <Skeleton className="h-4 w-full" />
+          <div className="flex flex-wrap gap-4 mt-4">
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-4 w-1/4" />
+            <Skeleton className="h-4 w-1/4" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-80 w-full mb-6" />
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="p-4 border rounded-lg">
+                <Skeleton className="h-5 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2 mb-1" />
+                <Skeleton className="h-4 w-1/2 mb-1" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (chartData.length === 0) {
     return (
       <Card className="w-full">
@@ -206,35 +238,35 @@ export default function BudgetVsActualChart({
               }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis 
-                dataKey="category" 
+              <XAxis
+                dataKey="category"
                 tick={{ fontSize: 12 }}
                 angle={-45}
                 textAnchor="end"
                 height={80}
               />
-              <YAxis 
+              <YAxis
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => `$${value}`}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Bar 
-                dataKey="budgeted" 
-                fill="hsl(var(--primary))" 
+              <Bar
+                dataKey="budgeted"
+                fill="hsl(var(--primary))"
                 name="Budgeted"
                 radius={[4, 4, 0, 0]}
               />
-              <Bar 
-                dataKey="actual" 
-                fill="hsl(var(--muted-foreground))" 
+              <Bar
+                dataKey="actual"
+                fill="hsl(var(--muted-foreground))"
                 name="Actual"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        
+
         {/* Summary cards */}
         <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           {chartData.map((item) => (

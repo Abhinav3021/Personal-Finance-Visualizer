@@ -14,6 +14,7 @@ import BudgetVsActualChart from '@/components/BudgetVsActualChart';
 import SpendingInsights from '@/components/SpendingInsights';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Toaster } from '@/components/ui/sonner';
+import {toast} from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 export default function Home() {
@@ -75,7 +76,7 @@ export default function Home() {
     for (let i = -6; i <= 6; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
       const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      const label = date.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
       options.push({ value, label });
     }
     return options;
@@ -92,6 +93,12 @@ export default function Home() {
         body: JSON.stringify(budgetData),
       });
       if (!response.ok) {
+         const errorData = await response.json();
+      if (errorData.error === "Budget already exists for this category and month") {
+        toast.error("You've already set a budget for this category and month. Try editing the existing one or choosing a different category/month.");
+      } else {
+        toast.error(`Failed to save budget: ${errorData.error || 'An unknown error occurred.'}`);
+      }
         throw new Error('Failed to save budget');
       }
       fetchBudgets(); // Refresh budgets after saving

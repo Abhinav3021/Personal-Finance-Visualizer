@@ -37,7 +37,7 @@ export default function MonthlyExpensesChart({ transactions, isLoading = false }
     // Format month names for display
     return monthlyArray.map(item => ({
       ...item,
-      monthDisplay: new Date(item.month + '-01').toLocaleDateString('en-US', {
+      monthDisplay: new Date(item.month + '-01').toLocaleDateString('en-IN', {
         year: 'numeric',
         month: 'short'
       })
