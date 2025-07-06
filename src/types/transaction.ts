@@ -6,6 +6,13 @@ export interface Transaction {
   category: string;
 }
 
+export interface Budget {
+  _id?: string;
+  category: string;
+  month: string; // Format: YYYY-MM
+  budgetAmount: number;
+}
+
 export const CATEGORIES = [
   'Food',
   'Education',
