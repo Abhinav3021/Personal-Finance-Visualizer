@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Transaction } from '@/types/transaction';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Transaction, CATEGORIES } from '@/types/transaction';
 import { toast } from 'sonner';
 
 interface TransactionFormProps {
@@ -18,7 +19,8 @@ export default function TransactionForm({ transaction, onSuccess, onCancel }: Tr
   const [formData, setFormData] = useState({
     amount: transaction?.amount?.toString() || '',
     date: transaction?.date ? new Date(transaction.date).toISOString().split('T')[0] : '',
-    description: transaction?.description || ''
+    description: transaction?.description || '',
+    category: transaction?.category || ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -40,6 +42,10 @@ export default function TransactionForm({ transaction, onSuccess, onCancel }: Tr
       newErrors.description = 'Description is required';
     } else if (formData.description.length < 3) {
       newErrors.description = 'Description must be at least 3 characters';
+    }
+
+    if (!formData.category) {
+      newErrors.category = 'Category is required';
     }
 
     setErrors(newErrors);
@@ -75,7 +81,11 @@ export default function TransactionForm({ transaction, onSuccess, onCancel }: Tr
         throw new Error(errorData.error || 'Failed to save transaction');
       }
 
-      toast.success(transaction ? 'Transaction updated successfully' : 'Transaction added successfully');
+      toast.success(transaction ? 'Transaction updated successfully' : 'Transaction added successfully',
+        {
+    style: { background: '#22c55e', color: 'white' }
+     }
+      );
       onSuccess();
       
       // Reset form if adding new transaction
@@ -83,7 +93,8 @@ export default function TransactionForm({ transaction, onSuccess, onCancel }: Tr
         setFormData({
           amount: '',
           date: '',
-          description: ''
+          description: '',
+          category: ''
         });
       }
     } catch (error) {
@@ -159,6 +170,30 @@ export default function TransactionForm({ transaction, onSuccess, onCancel }: Tr
             />
             {errors.description && (
               <p className="text-sm text-red-500">{errors.description}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Category
+            </Label>
+            <Select
+              value={formData.category}
+              onValueChange={(value) => handleInputChange('category', value)}
+            >
+              <SelectTrigger className={`${errors.category ? 'border-red-500 focus:border-red-500' : ''}`}>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.category && (
+              <p className="text-sm text-red-500">{errors.category}</p>
             )}
           </div>
 
