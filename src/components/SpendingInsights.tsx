@@ -6,11 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, TrendingUp, TrendingDown, Target, DollarSign, Calendar } from 'lucide-react';
 import { Budget, Transaction } from '@/types/transaction';
+import { Skeleton } from '@/components/ui/skeleton'; // Assuming you have a Skeleton component
 
 interface SpendingInsightsProps {
   budgets: Budget[];
   transactions: Transaction[];
   selectedMonth: string;
+  isLoading?: boolean;
 }
 
 interface CategoryInsight {
@@ -24,10 +26,11 @@ interface CategoryInsight {
   daysElapsed: number;
 }
 
-export default function SpendingInsights({ 
-  budgets, 
-  transactions, 
-  selectedMonth 
+export default function SpendingInsights({
+  budgets,
+  transactions,
+  selectedMonth,
+  isLoading = false
 }: SpendingInsightsProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -38,7 +41,7 @@ export default function SpendingInsights({
 
   const insights = useMemo(() => {
     const currentBudgets = budgets.filter(budget => budget.month === selectedMonth);
-    
+
     if (currentBudgets.length === 0) {
       return [];
     }
@@ -48,8 +51,8 @@ export default function SpendingInsights({
     const daysInMonth = new Date(year, month, 0).getDate();
     const today = new Date();
     const currentDate = new Date(year, month - 1, today.getDate());
-    const daysElapsed = today.getMonth() === month - 1 && today.getFullYear() === year 
-      ? today.getDate() 
+    const daysElapsed = today.getMonth() === month - 1 && today.getFullYear() === year
+      ? today.getDate()
       : (today > currentDate ? daysInMonth : 0);
 
     // Calculate actual spending per category for the selected month
@@ -68,7 +71,7 @@ export default function SpendingInsights({
     const categoryInsights: CategoryInsight[] = currentBudgets.map(budget => {
       const actual = actualSpending[budget.category] || 0;
       const percentage = budget.budgetAmount > 0 ? (actual / budget.budgetAmount) * 100 : 0;
-      
+
       let status: 'danger' | 'warning' | 'good' | 'excellent' = 'good';
       let message = '';
 
@@ -125,9 +128,9 @@ export default function SpendingInsights({
     try {
       const [year, monthNum] = month.split('-');
       const date = new Date(parseInt(year), parseInt(monthNum) - 1, 1);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long' 
+      return date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long'
       });
     } catch {
       return month;
@@ -164,19 +167,19 @@ export default function SpendingInsights({
     }
   };
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 100) return 'bg-destructive';
-    if (percentage >= 90) return 'bg-yellow-500';
-    if (percentage >= 75) return 'bg-orange-500';
-    if (percentage >= 50) return 'bg-blue-500';
-    return 'bg-green-500';
-  };
+  // const getProgressColor = (percentage: number) => {
+  //   if (percentage >= 100) return 'bg-destructive';
+  //   if (percentage >= 90) return 'bg-yellow-500';
+  //   if (percentage >= 75) return 'bg-orange-500';
+  //   if (percentage >= 50) return 'bg-blue-500';
+  //   return 'bg-green-500';
+  // };
 
   const overallStats = useMemo(() => {
     const totalBudgeted = insights.reduce((sum, insight) => sum + insight.budgeted, 0);
     const totalActual = insights.reduce((sum, insight) => sum + insight.actual, 0);
     const overallPercentage = totalBudgeted > 0 ? (totalActual / totalBudgeted) * 100 : 0;
-    
+
     const categoriesOverBudget = insights.filter(insight => insight.percentage >= 100).length;
     const categoriesWarning = insights.filter(insight => insight.percentage >= 75 && insight.percentage < 100).length;
     const categoriesGood = insights.filter(insight => insight.percentage < 75).length;
@@ -190,6 +193,59 @@ export default function SpendingInsights({
       categoriesGood
     };
   }, [insights]);
+
+  if (isLoading) {
+    return (
+      <Card className="w-full animate-pulse">
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2 mb-2" />
+          <Skeleton className="h-4 w-full" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="p-4 border rounded-lg bg-muted/50">
+            <Skeleton className="h-5 w-2/3 mb-3" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Skeleton className="h-4 w-1/3 mb-2" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-4 w-2/3 mt-2" />
+              </div>
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Skeleton className="h-5 w-1/3 mb-2" />
+            {[...Array(3)].map((_, i) => ( // Show 3 skeleton insights
+              <div key={i} className="p-4 border rounded-lg">
+                <div className="flex items-start justify-between mb-3">
+                  <Skeleton className="h-6 w-1/2" />
+                  <Skeleton className="h-6 w-1/4" />
+                </div>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-2 w-full mb-3" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-3 w-1/3 mt-2" />
+              </div>
+            ))}
+          </div>
+
+          <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950/20">
+            <Skeleton className="h-5 w-1/4 mb-2" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (insights.length === 0) {
     return (
@@ -235,8 +291,8 @@ export default function SpendingInsights({
             <div>
               <p className="text-sm text-muted-foreground">Total Budget Usage</p>
               <div className="flex items-center gap-2 mt-1">
-                <Progress 
-                  value={Math.min(overallStats.overallPercentage, 100)} 
+                <Progress
+                  value={Math.min(overallStats.overallPercentage, 100)}
                   className="flex-1"
                 />
                 <span className="text-sm font-medium min-w-12">
@@ -280,7 +336,7 @@ export default function SpendingInsights({
                   </div>
                 </div>
               </div>
-              
+
               <div className="mb-3">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-sm text-muted-foreground">Budget Usage</span>
@@ -288,19 +344,19 @@ export default function SpendingInsights({
                     {Math.round(insight.percentage)}%
                   </span>
                 </div>
-                <Progress 
-                  value={Math.min(insight.percentage, 100)} 
+                <Progress
+                  value={Math.min(insight.percentage, 100)}
                   className="h-2"
                 />
               </div>
-              
+
               <p className={`text-sm ${getStatusColor(insight.status)}`}>
                 {insight.message}
               </p>
-              
+
               {insight.daysElapsed > 0 && (
                 <div className="mt-2 text-xs text-muted-foreground">
-                  Day {insight.daysElapsed} of {insight.daysInMonth} 
+                  Day {insight.daysElapsed} of {insight.daysInMonth}
                   ({Math.round((insight.daysElapsed / insight.daysInMonth) * 100)}% of month elapsed)
                 </div>
               )}

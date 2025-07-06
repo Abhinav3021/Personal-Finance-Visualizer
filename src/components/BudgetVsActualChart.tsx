@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend} from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Budget, Transaction } from '@/types/transaction';
@@ -20,6 +20,20 @@ interface ChartData {
   actual: number;
   difference: number;
   status: 'under' | 'over' | 'ontrack';
+}
+
+interface RechartsTooltipPayload {
+  value: number;
+  name: string;
+  dataKey: string;
+  payload: ChartData;
+}
+
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: RechartsTooltipPayload[]; // payload is an array of RechartsTooltipPayload
+  label?: string | number; // label can be string or number
 }
 
 export default function BudgetVsActualChart({
@@ -92,18 +106,18 @@ export default function BudgetVsActualChart({
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'over':
-        return 'hsl(var(--destructive))';
-      case 'ontrack':
-        return 'hsl(var(--primary))';
-      case 'under':
-        return 'hsl(var(--muted-foreground))';
-      default:
-        return 'hsl(var(--muted-foreground))';
-    }
-  };
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case 'over':
+  //       return 'hsl(var(--destructive))';
+  //     case 'ontrack':
+  //       return 'hsl(var(--primary))';
+  //     case 'under':
+  //       return 'hsl(var(--muted-foreground))';
+  //     default:
+  //       return 'hsl(var(--muted-foreground))';
+  //   }
+  // };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -122,7 +136,7 @@ export default function BudgetVsActualChart({
   const totalActual = chartData.reduce((sum, item) => sum + item.actual, 0);
   const totalDifference = totalActual - totalBudgeted;
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload as ChartData;
       return (
