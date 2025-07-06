@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
+import { CATEGORIES } from '@/types/transaction';
 
 export async function PUT(
   request: NextRequest,
@@ -10,10 +11,10 @@ export async function PUT(
 
     const { id } = await context.params;
     const body = await request.json();
-    const { amount, date, description } = body;
+    const { amount, date, description, category } = body;
 
     // Validation
-    if (!amount || !date || !description) {
+    if (!amount || !date || !description || !category) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -25,6 +26,10 @@ export async function PUT(
       return NextResponse.json({ error: 'Description must be at least 3 characters' }, { status: 400 });
     }
 
+    if (!CATEGORIES.includes(category)) {
+      return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
+    }
+
     const client = await clientPromise;
     const db = client.db('personal-finance');
     
@@ -32,6 +37,7 @@ export async function PUT(
       amount: Number(amount),
       date: new Date(date),
       description: description.trim(),
+      category: category,
       updatedAt: new Date()
     };
 

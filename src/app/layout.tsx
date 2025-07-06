@@ -16,6 +16,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "FinanceX - Personal Finance Manager",
   description: "A clean and simple personal finance management app. Track your expenses, visualize spending patterns, and manage your financial data efficiently.",
+  icons: {
+    icon: '/coins.svg',
+  },
 };
 
 export default function RootLayout({

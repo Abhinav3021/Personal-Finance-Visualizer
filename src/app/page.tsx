@@ -5,9 +5,10 @@ import { Transaction } from '@/types/transaction';
 import TransactionForm from '@/components/TransactionForm';
 import TransactionList from '@/components/TransactionList';
 import MonthlyExpensesChart from '@/components/MonthlyExpensesChart';
-import { Toaster } from '@/components/ui/sonner';
+import CategoryPieChart from '@/components/CategoryPieChart';
+import SummaryCards from '@/components/SummaryCards';
 import { ThemeToggle } from '@/components/theme-toggle';
-
+import { Toaster } from '@/components/ui/sonner';
 export default function Home() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -65,11 +66,26 @@ export default function Home() {
         </div>
 
         <div className="space-y-8">
-          {/* Monthly Chart */}
-          <MonthlyExpensesChart 
+          {/* Summary Cards */}
+          <SummaryCards 
             transactions={transactions} 
             isLoading={isFetching}
           />
+          
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Monthly Expenses Chart */}
+            <MonthlyExpensesChart 
+              transactions={transactions} 
+              isLoading={isFetching}
+            />
+            
+            {/* Category Pie Chart */}
+            <CategoryPieChart
+              transactions={transactions} 
+              isLoading={isFetching}
+            />
+          </div>
           
           {/* Transaction List */}
           <TransactionList 
