@@ -106,18 +106,6 @@ export default function BudgetVsActualChart({
     }
   };
 
-  // const getStatusColor = (status: string) => {
-  //   switch (status) {
-  //     case 'over':
-  //       return 'hsl(var(--destructive))';
-  //     case 'ontrack':
-  //       return 'hsl(var(--primary))';
-  //     case 'under':
-  //       return 'hsl(var(--muted-foreground))';
-  //     default:
-  //       return 'hsl(var(--muted-foreground))';
-  //   }
-  // };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -266,17 +254,17 @@ export default function BudgetVsActualChart({
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Bar
-                dataKey="budgeted"
-                fill="hsl(var(--primary))"
-                name="Budgeted"
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="actual"
-                fill="hsl(var(--muted-foreground))"
-                name="Actual"
-                radius={[4, 4, 0, 0]}
-              />
+  dataKey="budgeted"
+  fill="#F5F5DC"
+  name="Budgeted"
+  radius={[4, 4, 0, 0]}
+/>
+<Bar
+  dataKey="actual"
+  fill="#CC5500"
+  name="Actual"
+  radius={[4, 4, 0, 0]}
+/>
             </BarChart>
           </ResponsiveContainer>
         </div>

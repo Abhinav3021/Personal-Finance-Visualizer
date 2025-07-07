@@ -2,37 +2,41 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Transaction } from '@/types/transaction';
+import { Transaction } from '@/types/transaction'; // Assuming Transaction type is correct
 
 interface CategoryPieChartProps {
   transactions: Transaction[];
-  isLoading?: boolean;
+  isLoading?: boolean; // You have isLoading but it's not used. Consider removing or using it.
 }
 
 // Define category colors
 const CATEGORY_COLORS: Record<string, string> = {
-  'Food & Dining': '#FF6B6B',
-  'Transportation': '#4ECDC4',
-  'Shopping': '#45B7D1',
-  'Entertainment': '#FFA726',
-  'Bills & Utilities': '#AB47BC',
-  'Healthcare': '#EF5350',
-  'Education': '#66BB6A',
-  'Travel': '#26A69A',
-  'Groceries': '#FFCA28',
-  'Other': '#8D6E63'
+  'Food': '#FF6B6B', 
+  'Education': '#66BB6A', 
+  'Transport': '#4ECDC4', 
+  'Utilities': '#AB47BC', 
+  'Entertainment': '#FFA726', 
+  'Other': '#8D6E63' 
 };
+
+// Define the shape of data items used in recharts for this specific chart
+interface ChartDataItem {
+  name: string;
+  value: number;
+  color: string;
+}
 
 export default function CategoryPieChart({ transactions }: CategoryPieChartProps) {
   // Calculate total spending by category
   const categoryTotals = transactions.reduce((acc, transaction) => {
-    const category = transaction.category || 'Other';
+    // Fallback to 'Other' if category is undefined or null (ensure your Transaction type handles this)
+    const category = transaction.category || 'Other'; 
     acc[category] = (acc[category] || 0) + transaction.amount;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>); // Explicitly type the accumulator
 
   // Convert to array format for recharts
-  const chartData = Object.entries(categoryTotals).map(([category, amount]) => ({
+  const chartData: ChartDataItem[] = Object.entries(categoryTotals).map(([category, amount]) => ({
     name: category,
     value: amount,
     color: CATEGORY_COLORS[category] || '#8D6E63'
@@ -43,10 +47,15 @@ export default function CategoryPieChart({ transactions }: CategoryPieChartProps
 
   const totalAmount = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload }: any) => {
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: Array<{ payload: ChartDataItem }>;
+    label?: string; // recharts also provides label, though not used here
+  }
+
+  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
+      const data = payload[0].payload; // Access the actual data item
       const percentage = ((data.value / totalAmount) * 100).toFixed(1);
       return (
         <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
@@ -60,17 +69,24 @@ export default function CategoryPieChart({ transactions }: CategoryPieChartProps
     return null;
   };
 
-  // Custom legend component
-  const CustomLegend = ({ payload }: any) => {
+  
+  interface CustomLegendProps {
+    payload?: Array<{
+      value: string; // The name of the category
+      color: string;
+      // Add other properties if you use them, e.g., `id`, `type`, `dataKey`
+    }>;
+  }
+
+  const CustomLegend = ({ payload }: CustomLegendProps) => {
     return (
       <div className="flex flex-wrap gap-2 justify-center mt-4">
-        {payload.map((entry: any, index: number) => (
+        {payload?.map((entry, index) => ( // Use optional chaining for payload
           <div key={index} className="flex items-center gap-1 text-xs">
-            <div 
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: entry.color }}
+            <div
+              className={`w-3 h-3 rounded-full bg-[${entry.color}]`}
             />
-            <span className="text-gray-600 dark:text-gray-400">{entry.value}</span>
+            <span className="text-gray-600 dark:text-gray-400">{entry.value}</span> {/* entry.value is the category name here */}
           </div>
         ))}
       </div>
@@ -110,7 +126,10 @@ export default function CategoryPieChart({ transactions }: CategoryPieChartProps
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => {
+                  const actualPercent = percent !== undefined ? percent : 0;
+                  return `${name} ${(actualPercent * 100).toFixed(0)}%`;
+                }}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

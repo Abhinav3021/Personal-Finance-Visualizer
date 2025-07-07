@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
 import { CATEGORIES } from '@/types/transaction';
 
 export async function GET() {
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Description must be at least 3 characters' }, { status: 400 });
     }
 
-    if (!CATEGORIES.includes(category as any)) {
+    if (!CATEGORIES.includes(category as typeof CATEGORIES[number])) {
       return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
     }
 

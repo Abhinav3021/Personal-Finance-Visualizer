@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils"
 function Progress({
   className,
   value,
+  overLimit = false,
   ...props
-}: React.ComponentProps<typeof ProgressPrimitive.Root>) {
+}: React.ComponentProps<typeof ProgressPrimitive.Root> & { overLimit?: boolean }) {
   return (
     <ProgressPrimitive.Root
       data-slot="progress"
@@ -21,11 +22,17 @@ function Progress({
     >
       <ProgressPrimitive.Indicator
         data-slot="progress-indicator"
-        className="bg-primary h-full w-full flex-1 transition-all"
-        style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+        className={cn(
+          "h-full w-full flex-1 transition-all",
+          overLimit ? "bg-red-600" : "bg-green-600"
+        )}
+        style={{
+          transform: `translateX(-${100 - (value || 0)}%)`,
+        }}
       />
     </ProgressPrimitive.Root>
   )
 }
+
 
 export { Progress }

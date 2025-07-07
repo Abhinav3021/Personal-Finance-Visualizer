@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react'; // Import useCallback
 import { Transaction } from '@/types/transaction';
 import { Budget } from '@/types/transaction'; // Make sure Budget type is correctly imported from your types file
 
@@ -38,48 +39,55 @@ export default function Home() {
   const [budgetToEdit, setBudgetToEdit] = useState<Budget | null>(null); // State to hold budget being edited
 
   // --- Data Fetching Functions ---
-  const fetchTransactions = async () => {
+  // Wrap fetch functions with useCallback to memoize them
+  const fetchTransactions = useCallback(async () => {
     setIsFetching(true);
     try {
       const response = await fetch('/api/transactions');
       if (!response.ok) {
+        // Log the response status and text for better debugging
+        const errorText = await response.text();
+        console.error(`Failed to fetch transactions: ${response.status} - ${errorText}`);
         throw new Error('Failed to fetch transactions');
       }
       const data = await response.json();
       setTransactions(data);
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      toast.error('Failed to load transactions.');
+      toast.error('Failed to load transactions. Please check your network and try again.');
     } finally {
       setIsFetching(false);
     }
-  };
+  }, []); // Empty dependency array means this function is created once
 
-  const fetchBudgets = async () => {
+  const fetchBudgets = useCallback(async () => {
     setIsFetchingBudgets(true);
     try {
       const response = await fetch(`/api/budgets?month=${selectedMonth}`);
       if (!response.ok) {
+        // Log the response status and text for better debugging
+        const errorText = await response.text();
+        console.error(`Failed to fetch budgets: ${response.status} - ${errorText}`);
         throw new Error('Failed to fetch budgets');
       }
       const data = await response.json();
       setBudgets(data);
     } catch (error) {
       console.error('Error fetching budgets:', error);
-      toast.error('Failed to load budgets.');
+      toast.error('Failed to load budgets for the selected month. Please try again.');
     } finally {
       setIsFetchingBudgets(false);
     }
-  };
+  }, [selectedMonth]); // fetchBudgets depends on selectedMonth
 
   // --- Effects for Data Fetching ---
   useEffect(() => {
     fetchTransactions();
-  }, []); // Fetch transactions once on mount
+  }, [fetchTransactions]); // Add fetchTransactions to dependency array
 
   useEffect(() => {
     fetchBudgets();
-  }, [selectedMonth,fetchBudgets]); // Refetch budgets when selected month changes
+  }, [selectedMonth, fetchBudgets]); // fetchBudgets is now memoized, so no infinite loop
 
   const totalExpenses = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 
@@ -116,7 +124,7 @@ export default function Home() {
       if (!response.ok) {
         const errorResponse = await response.json();
         const errorMessage = errorResponse.error || 'An unknown error occurred.';
-        
+
         if (errorMessage === "Budget already exists for this category and month") {
           toast.error("You've already set a budget for this category and month. Try editing the existing one or choosing a different category/month.");
         } else {
@@ -131,10 +139,11 @@ export default function Home() {
       setBudgetToEdit(null); // Clear budget being edited state
     } catch (error) {
       console.error('Error saving budget:', error);
+      // More specific error handling for toast messages
       if (error instanceof Error && !error.message.includes('Budget already exists')) {
         toast.error("There was an issue saving your budget. Please try again.");
-      } else if (!(error instanceof Error)) {
-         toast.error("An unexpected error occurred. Please try again.");
+      } else { // This else block handles the original `throw new Error` and any other unhandled errors
+        toast.error("An unexpected error occurred. Please try again.");
       }
     }
   };
@@ -206,7 +215,7 @@ export default function Home() {
             <TabsTrigger value="transactions">Transactions</TabsTrigger>
             <TabsTrigger value="budgets">Budgets</TabsTrigger>
           </TabsList>
-          
+
           {/* Transactions Tab Content */}
           <TabsContent value="transactions" className="space-y-8">
             {/* Add Transaction Form */}
@@ -216,35 +225,35 @@ export default function Home() {
 
             <div className="space-y-8">
               {/* Summary Cards */}
-              <SummaryCards 
-                transactions={transactions} 
+              <SummaryCards
+                transactions={transactions}
                 isLoading={isFetching}
               />
-              
+
               {/* Charts Section */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Monthly Expenses Chart */}
-                <MonthlyExpensesChart 
-                  transactions={transactions} 
+                <MonthlyExpensesChart
+                  transactions={transactions}
                   isLoading={isFetching}
                 />
-                
+
                 {/* Category Pie Chart */}
                 <CategoryPieChart
-                  transactions={transactions} 
+                  transactions={transactions}
                   isLoading={isFetching}
                 />
               </div>
-              
+
               {/* Transaction List */}
-              <TransactionList 
-                transactions={transactions} 
+              <TransactionList
+                transactions={transactions}
                 onTransactionUpdate={fetchTransactions}
                 isLoading={isFetching}
               />
             </div>
           </TabsContent>
-          
+
           {/* Budgets Tab Content */}
           <TabsContent value="budgets" className="space-y-8">
             {/* Month Selection */}
@@ -270,7 +279,7 @@ export default function Home() {
 
             <div className="space-y-8">
               {/* Budget List */}
-              <BudgetList 
+              <BudgetList
                 budgets={budgets}
                 onEdit={handleEditBudget}
                 onDelete={handleDeleteBudget}
@@ -280,7 +289,7 @@ export default function Home() {
               />
 
               {/* Budget vs Actual Chart */}
-              <BudgetVsActualChart 
+              <BudgetVsActualChart
                 budgets={budgets}
                 transactions={transactions}
                 selectedMonth={selectedMonth}
@@ -288,7 +297,7 @@ export default function Home() {
               />
 
               {/* Spending Insights */}
-              <SpendingInsights 
+              <SpendingInsights
                 budgets={budgets}
                 transactions={transactions}
                 selectedMonth={selectedMonth}
@@ -298,14 +307,14 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </div>
-      
+
       {/* BudgetForm Modal (Dialog) - Centralized for both Add and Edit */}
       <Dialog open={isBudgetFormOpen} onOpenChange={setIsBudgetFormOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>{budgetToEdit ? 'Edit Budget' : 'Add New Budget'}</DialogTitle>
           </DialogHeader>
-          <BudgetForm 
+          <BudgetForm
             budget={budgetToEdit || undefined} // Pass budget data if editing, else undefined
             onSave={handleSaveBudget} // This handles both POST and PUT based on budgetToEdit state
             onCancel={handleCancelBudgetForm} // Pass a cancel handler for the modal

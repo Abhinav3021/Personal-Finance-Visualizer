@@ -180,8 +180,8 @@ export default function SpendingInsights({
     const totalActual = insights.reduce((sum, insight) => sum + insight.actual, 0);
     const overallPercentage = totalBudgeted > 0 ? (totalActual / totalBudgeted) * 100 : 0;
 
-    const categoriesOverBudget = insights.filter(insight => insight.percentage >= 100).length;
-    const categoriesWarning = insights.filter(insight => insight.percentage >= 75 && insight.percentage < 100).length;
+    const categoriesOverBudget = insights.filter(insight => insight.percentage > 100).length;
+    const categoriesWarning = insights.filter(insight => insight.percentage >= 75 && insight.percentage <= 100).length;
     const categoriesGood = insights.filter(insight => insight.percentage < 75).length;
 
     return {
@@ -292,9 +292,10 @@ export default function SpendingInsights({
               <p className="text-sm text-muted-foreground">Total Budget Usage</p>
               <div className="flex items-center gap-2 mt-1">
                 <Progress
-                  value={Math.min(overallStats.overallPercentage, 100)}
-                  className="flex-1"
-                />
+                 value={Math.min(overallStats.overallPercentage, 100)}
+                 overLimit={overallStats.overallPercentage >= 100}
+                 className="flex-1"
+/>
                 <span className="text-sm font-medium min-w-12">
                   {Math.round(overallStats.overallPercentage)}%
                 </span>
@@ -346,6 +347,7 @@ export default function SpendingInsights({
                 </div>
                 <Progress
                   value={Math.min(insight.percentage, 100)}
+                  overLimit={insight.percentage >= 100}
                   className="h-2"
                 />
               </div>
@@ -381,7 +383,6 @@ export default function SpendingInsights({
               <li>• Great job staying within budget! Consider setting aside extra savings</li>
             )}
             <li>• Review your spending patterns weekly to stay on track</li>
-            <li>• Use the dark theme for better viewing during evening budget reviews</li>
           </ul>
         </div>
       </CardContent>
