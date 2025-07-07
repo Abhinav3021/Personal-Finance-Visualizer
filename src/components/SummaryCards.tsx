@@ -126,7 +126,7 @@ export default function SummaryCards({ transactions }: SummaryCardsProps) {
           <div className="space-y-2">
             {recentTransactions.length > 0 ? (
               recentTransactions.map((transaction, index) => (
-                <div key={transaction.id || index} className="flex justify-between items-center">
+                <div key={transaction._id || index} className="flex justify-between items-center">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
                       {transaction.description}
